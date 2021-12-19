@@ -329,6 +329,11 @@ void Widget::getVideo(const std::string dirName) {
 
 void Widget::creatbuttonList() {
     // the QMediaPlayer which controls the playback
+    QList<QPushButton*> btns =  ui->buttonWidget->findChildren<QPushButton*>();
+    foreach(QPushButton* btn, btns){
+        delete btn;
+    }
+    delete ui->buttonWidget->layout();
     QVBoxLayout *layout = new QVBoxLayout();
     ui->buttonWidget->setLayout(layout);
 	buttonList.clear();
