@@ -3,9 +3,9 @@
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::Widget)
-{
+    , ui(new Ui::Widget){
     ui->setupUi(this);
+    playernumbers = 0;
     playerindex = 0;
     player = new ThePlayer;
     player->setVideoOutput(ui->videoWidget);
@@ -39,10 +39,14 @@ void Widget::on_open_clicked(){
     std::string dirName = array.toStdString();
     getVideo(dirName);
     creatbuttonList();
+    playerindex = 0;
 }
 
 
 void Widget::on_pause_clicked(){
+    if(playernumbers == 0){
+        return;
+    }
     switch (player->state())
     {
         case QMediaPlayer::State::PausedState:
@@ -78,6 +82,9 @@ void Widget::on_mute_clicked(){
 
 
 void Widget::on_backward_clicked(){
+    if(playernumbers == 0){
+        return;
+    }
     qint64 backward = player->position();
     backward = backward - 5000;
     player->setPosition(backward);
@@ -85,6 +92,9 @@ void Widget::on_backward_clicked(){
 
 
 void Widget::on_forward_clicked(){
+    if(playernumbers == 0){
+        return;
+    }
     qint64 forward = player->position();
     forward = forward + 5000;
     player->setPosition(forward);
@@ -92,6 +102,9 @@ void Widget::on_forward_clicked(){
 
 
 void Widget::on_speed_clicked(){
+    if(playernumbers == 0){
+        return;
+    }
     QMessageBox::question(
         nullptr,
         QString("Tomeo"),
@@ -179,12 +192,18 @@ void Widget::on_menu_clicked() {
 
 
 void Widget::on_next_clicked() {
-    playerindex= playerindex+1;
+    if(playernumbers == 0){
+        return;
+    }
+
+    if(playerindex == playernumbers-1){
+        playerindex =  0;
+    }
+    else {
+         playerindex= playerindex+1;
+    }
     TheButtonInfo* button = player->getButtons()->at(playerindex)->info;
     player->jumpTo(button);
-    if(playerindex == 5){
-        playerindex = -1;
-    }
 }
 
 
@@ -194,7 +213,6 @@ void Widget::getbuttonindex(int index){
     playerindex=index;
 }
 
-
 void Widget::on_upload_clicked()
 {
     QMessageBox::question(
@@ -203,7 +221,6 @@ void Widget::on_upload_clicked()
         QString("Click to upload the video, drag the file into the box to upload it. Not yet implemented."),
         QMessageBox::Yes);
 }
-
 
 //end slots
 
@@ -242,17 +259,16 @@ std::vector<TheButtonInfo> Widget::getInfoIn (std::string loc) {
                 qDebug() << "warning: skipping video because I couldn't find thumbnail " << thumb << endl;
         }
     }
-
+    qDebug()<<out.size();
+    playernumbers = out.size();
     return out;
 }
 
 void Widget::getVideo(const std::string dirName) {
     // let's just check that Qt is operational first
     qDebug() << "Qt version: " << QT_VERSION_STR << endl;
-
-    //开始上传视频文件
     // collect all the videos in the folder
-
+    videoList.clear();
     videoList = getInfoIn(dirName);
 
     if (videoList.size() == 0) {
@@ -270,7 +286,7 @@ void Widget::getVideo(const std::string dirName) {
         default:
             break;
         }
-        exit(-1);
+        return;
     }
 
 }
@@ -279,9 +295,9 @@ void Widget::creatbuttonList() {
     // the QMediaPlayer which controls the playback
     QVBoxLayout *layout = new QVBoxLayout();
     ui->buttonWidget->setLayout(layout);
-
-    // create the six buttons
-    for ( int i = 0; i < 6; i++ ) {
+	buttonList.clear();
+    // create the buttons
+    for ( int i = 0; i < playernumbers; i++ ) {
         TheButton *button = new TheButton(ui->buttonWidget);
         button->index = i;
         button->connect(button, SIGNAL(jumpTo(TheButtonInfo* )), player, SLOT (jumpTo(TheButtonInfo*))); // when clicked, tell the player to play.
@@ -322,6 +338,6 @@ void Widget::keyPressEvent(QKeyEvent *event) {
     }
 }
 
-
-
 //end function
+
+

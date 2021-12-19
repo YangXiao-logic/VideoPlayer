@@ -53,9 +53,6 @@ private slots:
     void on_menu_clicked();
     void on_next_clicked();
     void getbuttonindex(int index);
-
-    void on_pushButton_clicked();
-
     void on_upload_clicked();
 
 private:
@@ -64,6 +61,7 @@ private:
     std::vector<TheButton*> buttonList;
     ThePlayer *player;
     int playerindex;
+    int playernumbers;
 
     void Init();
     void creatbuttonList();

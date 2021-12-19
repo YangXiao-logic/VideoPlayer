@@ -3,8 +3,7 @@
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::Widget)
-{
+    , ui(new Ui::Widget) {
     ui->setupUi(this);
     playernumbers = 0;
     playerindex = 0;
@@ -45,6 +44,7 @@ void Widget::on_open_clicked(){
     std::string dirName = array.toStdString();
     getVideo(dirName);
     creatbuttonList();
+    playerindex = 0;
     setVideoTitle(playerindex);
 }
 
@@ -204,13 +204,15 @@ void Widget::on_next_clicked() {
     if(playernumbers == 0){
         return;
     }
-    playerindex= playerindex+1;
+    if(playerindex == playernumbers-1){
+        playerindex =  0;
+    }
+    else {
+         playerindex= playerindex+1;
+    }
     TheButtonInfo* button = player->getButtons()->at(playerindex)->info;
     player->jumpTo(button);
     setVideoTitle(playerindex);
-    if(playerindex == playernumbers-1){
-        playerindex = -1;
-    }
 }
 
 void Widget::getbuttonindex(int index){
@@ -329,7 +331,7 @@ void Widget::creatbuttonList() {
     // the QMediaPlayer which controls the playback
     QVBoxLayout *layout = new QVBoxLayout();
     ui->buttonWidget->setLayout(layout);
-
+	buttonList.clear();
     // create the six buttons
     for ( int i = 0; i < playernumbers; i++ ) {
         TheButton *button = new TheButton(ui->buttonWidget);
