@@ -51,6 +51,7 @@ private:
     std::vector<TheButton*> buttonList;
     ThePlayer *player;
     int playerindex;
+    int playernumbers;
 
     void Init();
     void creatbuttonList();

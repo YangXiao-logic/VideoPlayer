@@ -7,6 +7,7 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
     playerindex = 0;
+    playernumbers = 0;
     player = new ThePlayer;
     player->setVideoOutput(ui->videoWidget);
     //Set video progress bar
@@ -39,10 +40,14 @@ void Widget::on_open_clicked(){
     std::string dirName = array.toStdString();
     getVideo(dirName);
     creatbuttonList();
+    playerindex = 0;
 }
 
 
 void Widget::on_pause_clicked(){
+    if(playernumbers == 0){
+        return;
+    }
     switch (player->state())
     {
         case QMediaPlayer::State::PausedState:
@@ -78,6 +83,9 @@ void Widget::on_mute_clicked(){
 
 
 void Widget::on_backward_clicked(){
+	if(playernumbers == 0){
+        return;
+    }
     qint64 backward = player->position();
     backward = backward - 5000;
     player->setPosition(backward);
@@ -85,6 +93,9 @@ void Widget::on_backward_clicked(){
 
 
 void Widget::on_forward_clicked(){
+	if(playernumbers == 0){
+        return;
+    }
     qint64 forward = player->position();
     forward = forward + 5000;
     player->setPosition(forward);
@@ -92,6 +103,9 @@ void Widget::on_forward_clicked(){
 
 
 void Widget::on_speed_clicked(){
+	if(playernumbers == 0){
+        return;
+    }
     player->setPlaybackRate(2);
     QMessageBox::question(
         nullptr,
@@ -134,12 +148,17 @@ void Widget::volumeStateChanged (){
 }
 
 void Widget::on_next_clicked() {
-    playerindex= playerindex+1;
+    if(playernumbers == 0){
+        return;
+    }
+    if(playerindex == playernumbers-1){
+        playerindex =  0;
+    }
+    else {
+         playerindex= playerindex+1;
+    }
     TheButtonInfo* button = player->getButtons()->at(playerindex)->info;
     player->jumpTo(button);
-    if(playerindex == 5){
-        playerindex = -1;
-    }
 }
 
 
@@ -185,7 +204,8 @@ std::vector<TheButtonInfo> Widget::getInfoIn (std::string loc) {
                 qDebug() << "warning: skipping video because I couldn't find thumbnail " << thumb << endl;
         }
     }
-
+    qDebug()<<out.size();
+    playernumbers = out.size();
     return out;
 }
 
@@ -213,15 +233,15 @@ void Widget::getVideo(const std::string dirName) {
         default:
             break;
         }
-        exit(-1);
+        return;
     }
 
 }
 
 void Widget::creatbuttonList() {
-
-    // create the six buttons
-    for ( int i = 0; i < 6; i++ ) {
+    buttonList.clear();
+    // create the buttons
+    for ( int i = 0; i < playernumbers; i++ ) {
         TheButton *button = new TheButton(ui->videoWidget);
         button->index = i;
         button->connect(button, SIGNAL(jumpTo(TheButtonInfo* )), player, SLOT (jumpTo(TheButtonInfo*))); // when clicked, tell the player to play.

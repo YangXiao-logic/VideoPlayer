@@ -3,9 +3,9 @@
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::Widget)
-{
+    , ui(new Ui::Widget) {
     ui->setupUi(this);
+    playernumbers = 0;
     playerindex = 0;
     player = new ThePlayer;
     player->setVideoOutput(ui->videoWidget);
@@ -39,10 +39,14 @@ void Widget::on_open_clicked(){
     std::string dirName = array.toStdString();
     getVideo(dirName);
     creatbuttonList();
+    playerindex = 0;
 }
 
 
 void Widget::on_pause_clicked(){
+    if(playernumbers == 0){
+        return;
+    }
     switch (player->state())
     {
         case QMediaPlayer::State::PausedState:
@@ -105,12 +109,18 @@ void Widget::volumeStateChanged (){
 }
 
 void Widget::on_next_clicked() {
-    playerindex= playerindex+1;
+    if(playernumbers == 0){
+        return;
+    }
+
+    if(playerindex == playernumbers-1){
+        playerindex =  0;
+    }
+    else {
+         playerindex= playerindex+1;
+    }
     TheButtonInfo* button = player->getButtons()->at(playerindex)->info;
     player->jumpTo(button);
-    if(playerindex == 5){
-        playerindex = -1;
-    }
 }
 
 
@@ -156,7 +166,8 @@ std::vector<TheButtonInfo> Widget::getInfoIn (std::string loc) {
                 qDebug() << "warning: skipping video because I couldn't find thumbnail " << thumb << endl;
         }
     }
-
+    qDebug()<<out.size();
+    playernumbers = out.size();
     return out;
 }
 
@@ -164,9 +175,8 @@ void Widget::getVideo(const std::string dirName) {
     // let's just check that Qt is operational first
     qDebug() << "Qt version: " << QT_VERSION_STR << endl;
 
-    //开始上传视频文件
     // collect all the videos in the folder
-
+    videoList.clear();
     videoList = getInfoIn(dirName);
 
     if (videoList.size() == 0) {
@@ -184,16 +194,16 @@ void Widget::getVideo(const std::string dirName) {
         default:
             break;
         }
-        exit(-1);
+        return;
     }
 
 }
 
 void Widget::creatbuttonList() {
     // the QMediaPlayer which controls the playback
-
-    // create the six buttons
-    for ( int i = 0; i < 6; i++ ) {
+    buttonList.clear();
+    // create the buttons
+    for ( int i = 0; i < playernumbers; i++ ) {
         TheButton *button = new TheButton(ui->videoWidget);
         button->index = i;
         button->connect(button, SIGNAL(jumpTo(TheButtonInfo* )), player, SLOT (jumpTo(TheButtonInfo*))); // when clicked, tell the player to play.
